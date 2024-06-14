@@ -101,7 +101,7 @@ function download()
 	svg = encodeURIComponent(svg);
 
 	var element = document.createElement('a');
-	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + svg);
+	element.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + svg);
 
 	// attempt to reuse their filename
 	let svgname = filename.replace(/\.stl$/, "");
