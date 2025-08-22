@@ -255,6 +255,19 @@ function cameraView(theta,psi)
 	reproject = true;
 }
 
+// Set camera based on a direction vector (x,y,z) pointing from lookat to eye
+function cameraDir(x,y,z)
+{
+	let r = Math.sqrt(x*x + y*y + z*z);
+	if (r === 0) return;
+	x /= r; y /= r; z /= r;
+	camera_theta = Math.acos(Math.min(1, Math.max(-1, z))); // clamp z just in case
+	if (Math.abs(z) < 0.999) // avoid instability at poles
+		camera_psi = Math.atan2(x, y);
+	computeEye();
+	reproject = true;
+}
+
 function keyTyped()
 {
 	if (key === 'v')

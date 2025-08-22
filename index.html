@@ -49,12 +49,67 @@ if (projection_mode === 'perspective') {
 computeEye();
 reproject=true;
 "/>
+<!-- Cube face views -->
+<span style="margin-left:8px;">Faces:</span>
+<input type="button" value="+X" onclick="cameraDir(1,0,0)"/>
+<input type="button" value="-X" onclick="cameraDir(-1,0,0)"/>
+<input type="button" value="+Y" onclick="cameraDir(0,1,0)"/>
+<input type="button" value="-Y" onclick="cameraDir(0,-1,0)"/>
+<input type="button" value="+Z" onclick="cameraDir(0,0,1)"/>
+<input type="button" value="-Z" onclick="cameraDir(0,0,-1)"/>
+<!-- Cube corner (vertex) views -->
+<span style="margin-left:8px;">Corners:</span>
+<input type="button" value="++ +" title="(+X,+Y,+Z)" onclick="cameraDir(1,1,1)"/>
+<input type="button" value="++ -" title="(+X,+Y,-Z)" onclick="cameraDir(1,1,-1)"/>
+<input type="button" value="+- +" title="(+X,-Y,+Z)" onclick="cameraDir(1,-1,1)"/>
+<input type="button" value="+- -" title="(+X,-Y,-Z)" onclick="cameraDir(1,-1,-1)"/>
+<input type="button" value="-+ +" title="(-X,+Y,+Z)" onclick="cameraDir(-1,1,1)"/>
+<input type="button" value="-+ -" title="(-X,+Y,-Z)" onclick="cameraDir(-1,1,-1)"/>
+<input type="button" value="-- +" title="(-X,-Y,+Z)" onclick="cameraDir(-1,-1,1)"/>
+<input type="button" value="-- -" title="(-X,-Y,-Z)" onclick="cameraDir(-1,-1,-1)"/>
+<!-- Edge midpoints (optional) -->
+<span style="margin-left:8px;">Edges:</span>
+<input type="button" value="XY+" title="(+X,+Y,0)" onclick="cameraDir(1,1,0)"/>
+<input type="button" value="XY-" title="(+X,-Y,0)" onclick="cameraDir(1,-1,0)"/>
+<input type="button" value="-XY+" title="(-X,+Y,0)" onclick="cameraDir(-1,1,0)"/>
+<input type="button" value="-XY-" title="(-X,-Y,0)" onclick="cameraDir(-1,-1,0)"/>
+<input type="button" value="XZ+" title="(+X,0,+Z)" onclick="cameraDir(1,0,1)"/>
+<input type="button" value="XZ-" title="(+X,0,-Z)" onclick="cameraDir(1,0,-1)"/>
+<input type="button" value="-XZ+" title="(-X,0,+Z)" onclick="cameraDir(-1,0,1)"/>
+<input type="button" value="-XZ-" title="(-X,0,-Z)" onclick="cameraDir(-1,0,-1)"/>
+<input type="button" value="YZ+" title="(0,+Y,+Z)" onclick="cameraDir(0,1,1)"/>
+<input type="button" value="YZ-" title="(0,+Y,-Z)" onclick="cameraDir(0,1,-1)"/>
+<input type="button" value="-YZ+" title="(0,-Y,+Z)" onclick="cameraDir(0,-1,1)"/>
+<input type="button" value="-YZ-" title="(0,-Y,-Z)" onclick="cameraDir(0,-1,-1)"/>
 <input id="eye_separation_slider" type="range" style="display:none" min="1" max="60" value="20" oninput="
 	console.log(eye_separation, this);
 	eye_separation=this.value/10;
 	computeEye();
 	reproject=true;
 " />
+
+<label for="view_select" style="margin-left:8px;">View:</label>
+<select id="view_select">
+	<option value="home">Home</option>
+	<optgroup label="Faces">
+		<option value="0,0,1">Top</option>
+		<option value="0,0,-1">Bottom</option>
+		<option value="0,1,0">Front</option>
+		<option value="0,-1,0">Back</option>
+		<option value="1,0,0">Right</option>
+		<option value="-1,0,0">Left</option>
+	</optgroup>
+	<optgroup label="Corners (Isometric)">
+		<option value="1,1,1">Iso 1 (+,+,+)</option>
+		<option value="1,-1,1">Iso 2 (+,-,+)</option>
+		<option value="-1,1,1">Iso 3 (-,+,+)</option>
+		<option value="-1,-1,1">Iso 4 (-,-,+)</option>
+		<option value="1,1,-1">Corner 5 (+,+,-)</option>
+		<option value="1,-1,-1">Corner 6 (+,-,-)</option>
+		<option value="-1,1,-1">Corner 7 (-,+,-)</option>
+		<option value="-1,-1,-1">Corner 8 (-,-,-)</option>
+	</optgroup>
+</select>
 <span align=right>
 More info: <a href="https://trmm.net/Plotter-Vision/">trmm.net/Plotter-Vision</a></span>
 </form>
@@ -128,6 +183,23 @@ function download()
 	element.click();
 	document.body.removeChild(element);
 }
+
+// View selector logic
+document.getElementById('view_select').addEventListener('change', function(){
+	const val = this.value;
+	if (val === 'home') {
+		// restore initial orientation
+		camera_theta = 70 * Math.PI / 180;
+		camera_psi = -150 * Math.PI / 180;
+		computeEye();
+		reproject = true;
+		return;
+	}
+	const parts = val.split(',').map(parseFloat);
+	if (parts.length === 3 && parts.every(v => !isNaN(v))) {
+		cameraDir(parts[0], parts[1], parts[2]);
+	}
+});
 </script>
   </body>
 </html>
