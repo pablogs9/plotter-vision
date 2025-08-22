@@ -40,14 +40,16 @@ function Camera(eye,lookat,up,fov)
 			for(let j = 0 ; j < 4 ; j++)
 				p[i] += this.matrix[i][j] * v[j];
 
-		// if the projected point has negative z, this means
-		// it is behind us and can be discarded
-		if (p[2] <= 0)
-			return;
+		// Cull points behind the camera (perspective only). For orthographic we used -Z, so keep sign consistent.
+		if (!(typeof projection_mode !== 'undefined' && projection_mode !== 'perspective')) {
+			if (p[2] <= 0)
+				return;
+		}
 
-		let x = p[0] / p[3];
-		let y = p[1] / p[3];
-		let z = p[2] / p[3];
+		let w = p[3] === 0 ? 1 : p[3];
+		let x = p[0] / w;
+		let y = p[1] / w;
+		let z = p[2] / w;
 		if (!v_out)
 			return createVector(x,y,z);
 
@@ -79,25 +81,39 @@ function Camera(eye,lookat,up,fov)
 			[ 0,   0,   0,   1 ],
 		];
 
-		let scale = 1000.0 / tan(this.fov * PI / 180 / 2);
-		let near = 1;
-		let far = 200;
-		let f1 = - far / (far - near);
-		let f2 = - far * near / (far - near);
+		// If global isometric_mode is true, use an orthographic/isometric style projection
+		if (typeof projection_mode !== 'undefined' && projection_mode !== 'perspective') {
+			// Orthographic base
+			let scale = 800 / (typeof camera_radius !== 'undefined' ? camera_radius : 100);
+			let ortho = [
+				[ scale, 0,     0, 0 ],
+				[ 0,     scale, 0, 0 ],
+				[ 0,     0,    -1, 0 ],
+				[ 0,     0,     0, 1 ],
+			];
+			this.matrix = m44_mult(ortho, cam);
+		} else {
+			let scale = 1000.0 / tan(this.fov * PI / 180 / 2);
+			let near = 1;
+			let far = 200;
+			let f1 = - far / (far - near);
+			let f2 = - far * near / (far - near);
 
-		let perspective = [
-			[ scale, 0, 0, 0 ],
-			[ 0, scale, 0, 0 ],
-			[ 0, 0, f2, -1 ],
-			[ 0, 0, f1,  0 ],
-		];
+			let perspective = [
+				[ scale, 0, 0, 0 ],
+				[ 0, scale, 0, 0 ],
+				[ 0, 0, f2, -1 ],
+				[ 0, 0, f1,  0 ],
+			];
 
-		this.matrix = m44_mult(perspective, cam);
+			this.matrix = m44_mult(perspective, cam);
+		}
 		this.u = u;
 		this.v = v;
 		this.w = w;
 
-		console.log("Camera matrix: " + this.matrix);
+		if (typeof projection_mode !== 'undefined')
+			console.log("Camera matrix: " + this.matrix + " (" + projection_mode + ")");
 		this.generation++;
 	}
 

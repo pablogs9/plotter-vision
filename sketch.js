@@ -15,6 +15,7 @@ let y_offset;
 let z_scale = 1;
 dark_mode = true;
 redblue_mode = false;
+projection_mode = 'perspective'; // 'perspective' | 'orthographic' | 'isometric'
 
 // blue color suggested by https://mastodon.sdf.org/@elb/105351977660915938
 red_color = 0xff0000;
@@ -294,7 +295,7 @@ function mouseWheel(event)
 {
 	vz = event.delta * 0.5;
 }
- 
+
 function windowResized() {
 	resizeCanvas(windowWidth-10, windowHeight-30);
 	camera.width = width;

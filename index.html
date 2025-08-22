@@ -33,6 +33,22 @@
 	reproject=true;
 	eye_separation_slider.style.display = redblue_mode ? '' : 'none';
 "/>
+<input type="button" id="projection_btn" value="Projection: Perspective" onclick="
+if (projection_mode === 'perspective') {
+	projection_mode = 'orthographic';
+	this.value='Projection: Orthographic';
+} else if (projection_mode === 'orthographic') {
+	projection_mode = 'isometric';
+	// classic isometric orientation
+	cameraView(35.264, 45); // sets theta/psi, recomputeEye inside
+	this.value='Projection: Isometric';
+} else {
+	projection_mode = 'perspective';
+	this.value='Projection: Perspective';
+}
+computeEye();
+reproject=true;
+"/>
 <input id="eye_separation_slider" type="range" style="display:none" min="1" max="60" value="20" oninput="
 	console.log(eye_separation, this);
 	eye_separation=this.value/10;
@@ -74,7 +90,7 @@ document.forms['uploadForm'].elements['fileUpload'].onchange = (evt) => {
 };
 
 function download()
-{	
+{
 	let svg = "";
 	svg += "<?xml version='1.0'?>\n";
 	svg += "<svg xmlns='http://www.w3.org/2000/svg' version='1.2' baseProfile='tiny' width='" + width + "px' height='" + height + "px'>\n";
