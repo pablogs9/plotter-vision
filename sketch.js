@@ -268,6 +268,51 @@ function cameraDir(x,y,z)
 	reproject = true;
 }
 
+// Fit the current model projection inside the viewport with margin
+function fitView()
+{
+	if (!stl) return;
+	// ensure current projection
+	stl.project(camera);
+	let maxX = 0, maxY = 0;
+	for (let t of stl.triangles) {
+		if (!t.screen) continue;
+		for (let p of t.screen) {
+			if (!p) continue;
+			if (Math.abs(p.x) > maxX) maxX = Math.abs(p.x);
+			if (Math.abs(p.y) > maxY) maxY = Math.abs(p.y);
+		}
+	}
+	if (maxX === 0 || maxY === 0) return;
+	const margin = 30; // pixels
+	const targetX = (width/2) - margin;
+	const targetY = (height/2) - margin;
+	// iterate a few times to converge
+	for (let iter=0; iter<4; iter++) {
+		let scaleNeededX = maxX / targetX;
+		let scaleNeededY = maxY / targetY;
+		let scaleNeeded = Math.max(scaleNeededX, scaleNeededY);
+		if (scaleNeeded > 1.05 || scaleNeeded < 0.95) {
+			camera_radius *= scaleNeeded; // if >1 we zoom out (increase radius), if <1 we zoom in
+			if (camera_radius < 1) camera_radius = 1;
+			computeEye();
+			stl.project(camera);
+			maxX = 0; maxY = 0;
+			for (let t of stl.triangles) {
+				if (!t.screen) continue;
+				for (let p of t.screen) {
+					if (!p) continue;
+					if (Math.abs(p.x) > maxX) maxX = Math.abs(p.x);
+					if (Math.abs(p.y) > maxY) maxY = Math.abs(p.y);
+				}
+			}
+		} else {
+			break; // within tolerance
+		}
+	}
+	reproject = true;
+}
+
 function keyTyped()
 {
 	if (key === 'v')
